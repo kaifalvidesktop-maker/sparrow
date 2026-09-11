@@ -61,7 +61,7 @@ const feedbackPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Feedback</title>
+<title>SPARROW Feedback</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -87,7 +87,7 @@ const feedbackPageHTML = `
 </head>
 <body>
   <h1>Send Feedback</h1>
-  <div class="sub">Found a bug or have an idea for BEAST? This stays on your device this session — nothing is sent anywhere.</div>
+  <div class="sub">Found a bug or have an idea for SPARROW? This stays on your device this session — nothing is sent anywhere.</div>
 
   <div class="card">
     <select id="fb-category">

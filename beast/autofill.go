@@ -17,20 +17,20 @@ var (
 	autofillData AutofillData
 )
 
-func getAutofill() AutofillData {
+func getAutofillProfile() AutofillData {
 	autofillMu.RLock()
 	defer autofillMu.RUnlock()
 
 	return autofillData
 }
 
-func setAutofill(data AutofillData) {
+func saveAutofillProfile(data AutofillData) {
 	autofillMu.Lock()
 	autofillData = data
 	autofillMu.Unlock()
 }
 
-func clearAutofill() {
+func clearAutofillProfile() {
 	autofillMu.Lock()
 	autofillData = AutofillData{}
 	autofillMu.Unlock()
@@ -53,7 +53,7 @@ const autofillPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Autofill</title>
+<title>SPARROW Autofill</title>
 
 <style>
 * {
@@ -210,7 +210,7 @@ button.danger:hover {
 
 async function loadData() {
 	try {
-		const data = await window.getAutofill();
+		const data = await window.getAutofillProfile();
 
 		if (!data) {
 			return;
@@ -251,7 +251,7 @@ async function saveData() {
 
 	try {
 
-		await window.setAutofill(data);
+		await window.saveAutofillProfile(data);
 
 		document.getElementById("status").textContent =
 			"Autofill information saved.";
@@ -267,7 +267,7 @@ async function clearData() {
 
 	try {
 
-		await window.clearAutofill();
+		await window.clearAutofillProfile();
 
 		document.getElementById("name").value = "";
 		document.getElementById("email").value = "";

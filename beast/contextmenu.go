@@ -6,8 +6,8 @@ package main
 
 const contextMenuJS = `
 (function() {
-	if (window.__beastContextMenuInstalled) return;
-	window.__beastContextMenuInstalled = true;
+	if (window.__sparrowContextMenuInstalled) return;
+	window.__sparrowContextMenuInstalled = true;
 
 	var menu = null;
 

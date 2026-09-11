@@ -27,19 +27,11 @@ type RAMHistory struct {
 
 var history = &RAMHistory{}
 
-// NavResult is returned to the calling page's JS as a quick ack.
-// The actual page change now happens via a real w.Navigate() call
-// (see navigateTo below) rather than by stuffing HTML into an iframe,
-// so the caller mostly just needs to know whether it was blocked.
 type NavResult struct {
 	Blocked bool   `json:"blocked"`
 	URL     string `json:"url"`
 }
 
-// NavState tells the freshly-loaded chrome script what to show in the
-// toolbar (address bar text, enabled/disabled back/forward buttons).
-// This has to come from Go because every real navigation reloads the
-// whole page, wiping out any JS variables the previous page had.
 type NavState struct {
 	URL        string `json:"url"`
 	CanBack    bool   `json:"canBack"`
@@ -47,55 +39,46 @@ type NavState struct {
 	TabID      int    `json:"tabId"`
 }
 
-// dataURI packages an internal HTML page as a base64 data: URL so it
-// can be given to w.Navigate() directly, the same way a real website
-// would be.
 func dataURI(html string) string {
 	return "data:text/html;charset=utf-8;base64," + base64.StdEncoding.EncodeToString([]byte(html))
 }
 
-// internalPageHTML maps a beast:// URL to the HTML that should be shown
-// for it. Returns ok=false for anything that isn't a known internal page.
-func internalPageHTML(beastURL string) (string, bool) {
-	switch beastURL {
-	case "beast://home":
+func internalPageHTML(sparrowURL string) (string, bool) {
+	switch sparrowURL {
+	case "sparrow://home":
 		return homePageHTML, true
-	case "beast://settings":
+	case "sparrow://settings":
 		return settingsPageHTML, true
-	case "beast://bookmarks":
+	case "sparrow://bookmarks":
 		return bookmarksPageHTML, true
-	case "beast://downloads":
+	case "sparrow://downloads":
 		return downloadsPageHTML, true
-	case "beast://history":
+	case "sparrow://history":
 		return historyPageHTML, true
-	case "beast://shortcuts":
+	case "sparrow://shortcuts":
 		return shortcutsPageHTML, true
-	case "beast://about":
+	case "sparrow://about":
 		return aboutPageHTML, true
-	case "beast://site-settings":
+	case "sparrow://site-settings":
 		return siteSettingsPageHTML, true
-	case "beast://cookies":
+	case "sparrow://cookies":
 		return cookiesPageHTML, true
-	case "beast://welcome":
+	case "sparrow://welcome":
 		return welcomePageHTML, true
-	case "beast://autofill":
+	case "sparrow://autofill":
 		return autofillPageHTML, true
-	case "beast://feedback":
+	case "sparrow://feedback":
 		return feedbackPageHTML, true
-	case "beast://passwords":
+	case "sparrow://passwords":
 		return passwordsPageHTML, true
-	case "beast://updates":
+	case "sparrow://updates":
 		return updatesPageHTML, true
-	case "beast://backup":
+	case "sparrow://backup":
 		return backupPageHTML, true
 	}
 	return "", false
 }
 
-// navigateTo performs the actual page change. It is used for internal
-// beast:// pages and real external URLs alike — there is no more
-// iframe, so "navigating" always means replacing the whole window's
-// content, exactly like a real browser tab does.
 func navigateTo(w webview.WebView, target string) {
 	if html, ok := internalPageHTML(target); ok {
 		w.Dispatch(func() { w.Navigate(dataURI(html)) })
@@ -104,7 +87,6 @@ func navigateTo(w webview.WebView, target string) {
 	w.Dispatch(func() { w.Navigate(target) })
 }
 
-// Add a new URL visit to RAM history
 func (h *RAMHistory) Add(url string, title string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -115,9 +97,6 @@ func (h *RAMHistory) Add(url string, title string) {
 	})
 }
 
-// Delete history entries that happened AFTER the given cutoff time
-// (i.e. keep only entries older than cutoff). Used by the time-scoped
-// "Clear Last Hour" / "Clear Today" buttons.
 func (h *RAMHistory) DeleteSince(cutoff time.Time) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -131,14 +110,12 @@ func (h *RAMHistory) DeleteSince(cutoff time.Time) {
 	h.Entries = newEntries
 }
 
-// Delete ALL history
 func (h *RAMHistory) DeleteAll() {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.Entries = []HistoryEntry{}
 }
 
-// Get all history (oldest to newest)
 func (h *RAMHistory) GetAll() []HistoryEntry {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -148,7 +125,6 @@ func (h *RAMHistory) GetAll() []HistoryEntry {
 	return entries
 }
 
-// Get most recent N entries (used by beast://history page and autocomplete)
 func (h *RAMHistory) GetRecent(limit int) []HistoryEntry {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -168,7 +144,7 @@ func (h *RAMHistory) GetRecent(limit int) []HistoryEntry {
 }
 
 // ---------------------------------------------------
-// BEAST HOME PAGE (loaded inside the shell's iframe)
+// SPARROW HOME PAGE
 // ---------------------------------------------------
 
 const homePageHTML = `
@@ -176,7 +152,7 @@ const homePageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST</title>
+<title>SPARROW</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -271,7 +247,7 @@ const homePageHTML = `
 </head>
 <body>
 
-  <div class="logo">BEAST</div>
+  <div class="logo">SPARROW</div>
   <div class="tagline">Fast. Private. Yours.</div>
 
   <input class="search-bar" id="searchBar" placeholder="Search Google or type a URL"
@@ -280,9 +256,9 @@ const homePageHTML = `
   <div class="top-sites" id="topSitesContainer"></div>
 
   <div class="history-controls">
-    <button onclick="go('beast://history')">History</button>
-    <button onclick="go('beast://bookmarks')">Bookmarks</button>
-    <button onclick="go('beast://settings')">Settings</button>
+    <button onclick="go('sparrow://history')">History</button>
+    <button onclick="go('sparrow://bookmarks')">Bookmarks</button>
+    <button onclick="go('sparrow://settings')">Settings</button>
   </div>
 
 <script>
@@ -293,11 +269,13 @@ const homePageHTML = `
   }
 
   async function loadTopSites() {
-    const sites = await window.getTopSites(4);
-    const container = document.getElementById('topSitesContainer');
-    container.innerHTML = sites.map(function(s) {
-      return '<div class="site" onclick="go(\'' + s.URL + '\')">' + s.Domain + '</div>';
-    }).join('');
+    if (window.getTopSites) {
+      const sites = await window.getTopSites(4);
+      const container = document.getElementById('topSitesContainer');
+      container.innerHTML = sites.map(function(s) {
+        return '<div class="site" onclick="go(\'' + s.URL + '\')">' + s.Domain + '</div>';
+      }).join('');
+    }
   }
   loadTopSites();
 </script>
@@ -307,15 +285,53 @@ const homePageHTML = `
 `
 
 // ---------------------------------------------------
-// MAIN FUNCTION - CREATES THE BROWSER WINDOW
+// MAIN FUNCTION - CREATES BROWSER INSTANCE
 // ---------------------------------------------------
 
 func main() {
-	w := webview.New(true) // true = show dev tools while building
+	// Initialize disk persistence engine
+	InitPersistence()
+	defer StopPersistence()
+
+	var autofillEnabled = true
+	var autofillEnabledMu sync.Mutex
+
+	w := webview.New(true)
 	defer w.Destroy()
 
-	w.SetTitle("BEAST")
+	windowHandle := uintptr(w.Window())
+	configureNativeWindow(windowHandle)
+
+	w.SetTitle("SPARROW")
 	w.SetSize(1200, 800, 0)
+
+	// -------------------------------
+	// GLOBAL SCRIPTS & INJECTIONS
+	// -------------------------------
+
+	w.Init("window.__SHORTCUTS__ = " + shortcutsJSON() + ";")
+	w.Init(chromeInjectionJS)
+	w.Init(autocompleteHTML())
+
+	w.Bind("closeWindow", func() {
+		closeNativeWindow(windowHandle)
+	})
+
+	w.Bind("minimizeWindow", func() {
+		minimizeNativeWindow(windowHandle)
+	})
+
+	w.Bind("toggleMaximizeWindow", func() {
+		toggleMaximizeNativeWindow(windowHandle)
+	})
+
+	w.Bind("toggleFullscreenWindow", func() {
+		toggleFullscreenNativeWindow(windowHandle)
+	})
+
+	w.Bind("beginWindowDrag", func() {
+		beginNativeWindowDrag(windowHandle)
+	})
 
 	// -------------------------------
 	// HISTORY CONTROLS
@@ -349,7 +365,6 @@ func main() {
 			return NavResult{}
 		}
 
-		// Internal beast:// pages
 		if _, ok := internalPageHTML(trimmed); ok {
 			tab := tabManager.GetActiveTab()
 			if tab == nil {
@@ -368,7 +383,7 @@ func main() {
 			if tab == nil {
 				tab = tabManager.NewTab(target)
 			}
-			blockedURL := "beast://blocked?" + domain
+			blockedURL := "sparrow://blocked?" + domain
 			tabManager.RecordNavigation(tab.ID, blockedURL)
 			w.Dispatch(func() { w.Navigate(dataURI(buildBlockedPageHTML(domain))) })
 			return NavResult{Blocked: true, URL: target}
@@ -386,13 +401,7 @@ func main() {
 			history.Add(target, target)
 		}
 
-		// This is a REAL top-level navigation now (w.Navigate), not an
-		// iframe src swap. That's the actual fix: most real sites
-		// (Google included) send X-Frame-Options / CSP headers that
-		// refuse to render inside anyone else's iframe, which is why
-		// search and general browsing used to fail with an error.
 		navigateTo(w, target)
-
 		return NavResult{URL: target}
 	})
 
@@ -402,8 +411,8 @@ func main() {
 
 	w.Bind("openNewTab", func() int {
 		tab := tabManager.NewTab("")
-		tabManager.RecordNavigation(tab.ID, "beast://home")
-		navigateTo(w, "beast://home")
+		tabManager.RecordNavigation(tab.ID, "sparrow://home")
+		navigateTo(w, "sparrow://home")
 		return tab.ID
 	})
 
@@ -424,13 +433,13 @@ func main() {
 		active := tabManager.GetActiveTab()
 		if active == nil {
 			tab := tabManager.NewTab("")
-			tabManager.RecordNavigation(tab.ID, "beast://home")
-			navigateTo(w, "beast://home")
+			tabManager.RecordNavigation(tab.ID, "sparrow://home")
+			navigateTo(w, "sparrow://home")
 			return
 		}
 		target := active.URL
 		if target == "" {
-			target = "beast://home"
+			target = "sparrow://home"
 		}
 		navigateTo(w, target)
 	})
@@ -442,7 +451,7 @@ func main() {
 		}
 		target := tab.URL
 		if target == "" {
-			target = "beast://home"
+			target = "sparrow://home"
 		}
 		navigateTo(w, target)
 	})
@@ -710,7 +719,7 @@ func main() {
 	})
 
 	w.Bind("openDevTools", func() {
-		fmt.Println("DevTools requested (already available via webview debug mode)")
+		fmt.Println("DevTools requested")
 	})
 
 	// -------------------------------
@@ -761,8 +770,16 @@ func main() {
 	// AUTOCOMPLETE / SUGGESTIONS
 	// -------------------------------
 
-	w.Bind("getSuggestions", func(partial string) []Suggestion {
-		return suggestEngine.GetSuggestions(partial, 6)
+	w.Bind("getAutocomplete", func(query string) []AutocompleteResult {
+		return getAutocompleteResults(query)
+	})
+
+	w.Bind("getSuggestions", func(partial string) []AutocompleteResult {
+		results := getAutocompleteResults(partial)
+		if len(results) > 6 {
+			return results[:6]
+		}
+		return results
 	})
 
 	// -------------------------------
@@ -774,7 +791,7 @@ func main() {
 	})
 
 	// -------------------------------
-	// FIND IN PAGE
+	// FIND IN PAGE & CONTEXT MENU
 	// -------------------------------
 
 	w.Bind("injectFindInPage", func() {
@@ -806,7 +823,7 @@ func main() {
 	})
 
 	// -------------------------------
-	// SMART TOP SITES
+	// SMART TOP SITES & SHORTCUTS
 	// -------------------------------
 
 	w.Bind("getTopSites", func(limit int) []TopSite {
@@ -899,23 +916,28 @@ func main() {
 	// AUTOFILL
 	// -------------------------------
 
-	w.Bind("saveAutofillProfile", func(name, email, phone, address, city, zip, country string) *AutofillProfile {
-		return autofillManager.SaveProfile(AutofillProfile{
-			FullName: trimAll(name), Email: trimAll(email), Phone: trimAll(phone),
-			Address: trimAll(address), City: trimAll(city), ZipCode: trimAll(zip), Country: trimAll(country),
-		})
+	w.Bind("saveAutofillProfile", func(data AutofillData) AutofillData {
+		data.Name = strings.TrimSpace(data.Name)
+		data.Email = strings.TrimSpace(data.Email)
+		data.Phone = strings.TrimSpace(data.Phone)
+		data.Address = strings.TrimSpace(data.Address)
+		saveAutofillProfile(data)
+		return data
 	})
 
-	w.Bind("getAutofillProfile", func() *AutofillProfile {
-		return autofillManager.GetProfile()
+	w.Bind("getAutofillProfile", func() AutofillData {
+		return getAutofillProfile()
 	})
 
 	w.Bind("clearAutofillProfile", func() {
-		autofillManager.ClearProfile()
+		clearAutofillProfile()
 	})
 
 	w.Bind("toggleAutofillEnabled", func() bool {
-		return autofillManager.ToggleEnabled()
+		autofillEnabledMu.Lock()
+		defer autofillEnabledMu.Unlock()
+		autofillEnabled = !autofillEnabled
+		return autofillEnabled
 	})
 
 	// -------------------------------
@@ -961,14 +983,6 @@ func main() {
 	w.Bind("applyAccessibility", func() {
 		s := accessibility
 		w.Eval(buildAccessibilityJS(s.FontScale, s.HighContrast, s.ReduceMotion, s.UnderlineLinks))
-	})
-
-	// -------------------------------
-	// AUTOFILL DETECTION INJECTION
-	// -------------------------------
-
-	w.Bind("injectAutofillDetect", func() {
-		w.Eval(autofillDetectJS)
 	})
 
 	// -------------------------------
@@ -1032,7 +1046,7 @@ func main() {
 	// -------------------------------
 
 	w.Bind("getChangelog", func() []ChangelogEntry {
-		return beastChangelog
+		return sparrowChangelog
 	})
 
 	// -------------------------------
@@ -1185,24 +1199,11 @@ func main() {
 	})
 
 	// -------------------------------
-	// PERSISTENT BROWSER CHROME (toolbar + tab strip)
-	//
-	// w.Init() registers a script that webview runs on EVERY page load,
-	// before that page's own scripts run. That's what lets us keep a
-	// toolbar/tabs UI even though we no longer keep everything inside
-	// one shell + iframe — each "tab" is now a real top-level
-	// navigation, and this script re-mounts the chrome on top of
-	// whatever loads (internal beast:// pages and real websites alike).
+	// OPEN INITIAL TAB
 	// -------------------------------
 
-	w.Init(chromeInjectionJS)
-
-	// -------------------------------
-	// OPEN THE FIRST TAB
-	// -------------------------------
-
-	firstTab := tabManager.NewTab("beast://home")
-	tabManager.RecordNavigation(firstTab.ID, "beast://home")
+	firstTab := tabManager.NewTab("sparrow://home")
+	tabManager.RecordNavigation(firstTab.ID, "sparrow://home")
 	w.Navigate(dataURI(homePageHTML))
 
 	w.Run()

@@ -35,7 +35,7 @@ func BuildBackup() BackupBundle {
 	}
 
 	return BackupBundle{
-		Version:   beastVersion,
+		Version:   sparrowVersion,
 		CreatedAt: time.Now().Format(time.RFC3339),
 		Bookmarks: exportList,
 		Settings:  settings.GetAll(),
@@ -61,7 +61,7 @@ func SaveBackupToFile() (string, error) {
 		return "", err
 	}
 
-	fileName := "beast-backup_" + time.Now().Format("2006-01-02_15-04-05") + ".json"
+	fileName := "sparrow-backup_" + time.Now().Format("2006-01-02_15-04-05") + ".json"
 	fullPath := filepath.Join(settings.DownloadPath, fileName)
 
 	err := os.WriteFile(fullPath, []byte(json), 0644)

@@ -113,7 +113,7 @@ func BuildAdblockJS() string {
 
 				return Promise.reject(
 					new TypeError(
-						"BEAST Shield blocked: " + url
+						"SPARROW Shield blocked: " + url
 					)
 				);
 			}
@@ -145,7 +145,7 @@ func BuildAdblockJS() string {
 					url
 				);
 
-				this.__beastBlocked = true;
+				this.__sparrowBlocked = true;
 
 				arguments[1] =
 					"data:text/plain,";

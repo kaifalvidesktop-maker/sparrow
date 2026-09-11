@@ -7,12 +7,12 @@ package main
 
 const findInPageJS = `
 (function() {
-	window.__beastFind = window.__beastFind || {
+	window.__sparrowFind = window.__sparrowFind || {
 		matches: [],
 		current: -1,
 
 		clear: function() {
-			document.querySelectorAll('mark.beast-find-mark').forEach(function(el) {
+			document.querySelectorAll('mark.sparrow-find-mark').forEach(function(el) {
 				var parent = el.parentNode;
 				parent.replaceChild(document.createTextNode(el.textContent), el);
 				parent.normalize();
@@ -49,7 +49,7 @@ const findInPageJS = `
 				while ((searchIdx = lowerText.indexOf(lowerQuery, lastIndex)) !== -1) {
 					frag.appendChild(document.createTextNode(text.slice(lastIndex, searchIdx)));
 					var mark = document.createElement('mark');
-					mark.className = 'beast-find-mark';
+					mark.className = 'sparrow-find-mark';
 					mark.style.background = '#ffd93d';
 					mark.style.color = '#000';
 					mark.textContent = text.slice(searchIdx, searchIdx + query.length);

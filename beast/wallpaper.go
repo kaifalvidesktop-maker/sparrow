@@ -13,7 +13,7 @@ type WallpaperOption struct {
 }
 
 var wallpaperOptions = []WallpaperOption{
-	{ID: "default", Name: "BEAST Dark", CSSValue: "linear-gradient(180deg, #0b0b0d 0%, #121214 100%)"},
+	{ID: "default", Name: "SPARROW Dark", CSSValue: "linear-gradient(180deg, #0b0b0d 0%, #121214 100%)"},
 	{ID: "midnight", Name: "Midnight Blue", CSSValue: "linear-gradient(180deg, #0a0e1a 0%, #131a2e 100%)"},
 	{ID: "forest", Name: "Deep Forest", CSSValue: "linear-gradient(180deg, #0a120d 0%, #101c14 100%)"},
 	{ID: "wine", Name: "Wine Red", CSSValue: "linear-gradient(180deg, #150a0d 0%, #1f1013 100%)"},

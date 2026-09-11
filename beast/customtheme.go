@@ -7,7 +7,7 @@ import (
 
 // ---------------------------------------------------
 // CUSTOM THEME EDITOR (user-defined accent color + shell tweaks)
-// Applies only to the BEAST shell UI (toolbar/tabs), not page content
+// Applies only to the SPARROW shell UI (toolbar/tabs), not page content
 // ---------------------------------------------------
 
 type CustomTheme struct {
@@ -94,7 +94,7 @@ func (ct *CustomTheme) BuildThemeCSS() string {
 	}
 
 	return `
-<style id="beast-custom-theme">
+<style id="sparrow-custom-theme">
   #toolbar { height: ` + compactHeight + ` !important; }
   .tab-chip { border-radius: ` + itoa(ct.TabRadius) + `px ` + itoa(ct.TabRadius) + `px 0 0 !important; }
   #address-wrap:focus-within { border-color: ` + ct.AccentColor + ` !important; }

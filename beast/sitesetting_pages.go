@@ -1,7 +1,7 @@
 package main
 
 // ---------------------------------------------------
-// PER-SITE PERMISSIONS PAGE (beast://site-settings)
+// PER-SITE PERMISSIONS PAGE (sparrow://site-settings)
 // ---------------------------------------------------
 
 const siteSettingsPageHTML = `
@@ -9,7 +9,7 @@ const siteSettingsPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Site Settings</title>
+<title>SPARROW Site Settings</title>
 <style>
   * { box-sizing: border-box; }
   body {

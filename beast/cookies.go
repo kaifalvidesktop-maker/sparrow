@@ -9,7 +9,7 @@ import (
 // ---------------------------------------------------
 // COOKIE MANAGER (per-site cookie tracking + control)
 // Note: real cookie interception requires deep engine hooks;
-// this tracks cookies BEAST is aware should be scoped per-site
+// this tracks cookies SPARROW is aware should be scoped per-site
 // and lets the user block/clear them per domain.
 // ---------------------------------------------------
 
@@ -98,8 +98,8 @@ func (cm *CookieManager) GetSummary() map[string]int {
 // Injectable JS that intercepts document.cookie writes and reports them to Go
 const cookieHookJS = `
 (function() {
-	if (window.__beastCookieHooked) return;
-	window.__beastCookieHooked = true;
+	if (window.__sparrowCookieHooked) return;
+	window.__sparrowCookieHooked = true;
 	try {
 		var originalDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
 		Object.defineProperty(document, 'cookie', {
@@ -121,7 +121,7 @@ const cookiesPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Cookies</title>
+<title>SPARROW Cookies</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -153,7 +153,7 @@ const cookiesPageHTML = `
 </head>
 <body>
   <h1>Cookies</h1>
-  <div class="sub">Cookies BEAST has observed sites setting during this session</div>
+  <div class="sub">Cookies SPARROW has observed sites setting during this session</div>
   <button class="btn" onclick="clearAllCookies()">Clear All Cookies</button>
   <div id="cookieList"></div>
 

@@ -1,7 +1,7 @@
 package main
 
 // ---------------------------------------------------
-// BEAST BROWSER CHROME (toolbar + tab strip)
+// SPARROW BROWSER CHROME (toolbar + tab strip)
 //
 // This used to be a static "shell" page with an <iframe> where every
 // other page (internal or external) was loaded. That's what broke
@@ -13,7 +13,7 @@ package main
 // external navigation basically never worked.
 //
 // The fix: there is no more iframe. Every navigation (internal
-// beast:// page or real external site) is a REAL top-level
+// sparrow:// page or real external site) is a REAL top-level
 // w.Navigate() call, exactly like a normal browser tab. This script
 // is registered with w.Init() in main.go, so it re-runs and re-mounts
 // the toolbar on top of whatever page has just loaded — internal or
@@ -23,8 +23,8 @@ package main
 
 const chromeInjectionJS = `
 (function () {
-  if (window.__beastChromeBooting) return;
-  window.__beastChromeBooting = true;
+  if (window.__sparrowChromeBooting) return;
+  window.__sparrowChromeBooting = true;
 
   function whenBodyReady(cb) {
     if (document.body) { cb(); return; }
@@ -37,12 +37,25 @@ const chromeInjectionJS = `
   function mountChrome() {
     var style = document.createElement('style');
     style.textContent =
-      '#__beast_chrome, #__beast_chrome * { box-sizing: border-box; }' +
-      'html { margin-top: 86px !important; }' +
-      '#__beast_chrome {' +
+      '#__sparrow_chrome, #__sparrow_chrome * { box-sizing: border-box; }' +
+      'html { margin-top: 116px !important; }' +
+      '#__sparrow_chrome {' +
       '  position: fixed; top: 0; left: 0; right: 0; z-index: 2147483647;' +
       '  font-family: "Segoe UI", sans-serif; background: #0b0b0d;' +
       '}' +
+      '#window-titlebar {' +
+      '  height: 30px; display: flex; align-items: center; justify-content: space-between;' +
+      '  padding-left: 12px; background: #0b0b0d; color: #888; font-size: 11px;' +
+      '  user-select: none; cursor: default;' +
+      '}' +
+      '#window-title { letter-spacing: 1px; font-weight: 600; }' +
+      '#window-controls { display: flex; height: 30px; }' +
+      '.window-control {' +
+      '  width: 46px; height: 30px; border: 0; background: transparent; color: #999;' +
+      '  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px;' +
+      '}' +
+      '.window-control:hover { background: #25262a; color: #fff; }' +
+      '.window-control.close:hover { background: #c42b1c; color: #fff; }' +
       '#tabstrip {' +
       '  display: flex; align-items: flex-end; background: #0f0f11;' +
       '  padding: 6px 6px 0 6px; gap: 4px; height: 38px; overflow-x: auto;' +
@@ -94,6 +107,7 @@ const chromeInjectionJS = `
       '#menu-dropdown {' +
       '  position: absolute; top: 46px; right: 8px; background: #1c1d20; border: 1px solid #2a2a2c;' +
       '  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 220px; padding: 8px; display: none; z-index: 100;' +
+      '  max-height: 80vh; overflow-y: auto;' +
       '}' +
       '#menu-dropdown.open { display: block; }' +
       '.menu-item { padding: 10px 14px; border-radius: 8px; color: #ccc; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; }' +
@@ -138,8 +152,16 @@ const chromeInjectionJS = `
     document.head.appendChild(style);
 
     var root = document.createElement('div');
-    root.id = '__beast_chrome';
+    root.id = '__sparrow_chrome';
     root.innerHTML =
+      '<div id="window-titlebar">' +
+      '  <div id="window-title">SPARROW</div>' +
+      '  <div id="window-controls">' +
+      '    <button class="window-control" id="window-minimize" title="Minimize">&#8212;</button>' +
+      '    <button class="window-control" id="window-fullscreen" title="Full screen">&#9633;</button>' +
+      '    <button class="window-control close" id="window-close" title="Close">&#10005;</button>' +
+      '  </div>' +
+      '</div>' +
       '<div id="tabstrip"></div>' +
       '<div id="toolbar">' +
       '  <div class="nav-btn" id="btn-back">&#8592;</div>' +
@@ -161,23 +183,23 @@ const chromeInjectionJS = `
       '  <div id="menu-btn">' +
       '    &#8942;' +
       '    <div id="menu-dropdown">' +
-      '      <div class="menu-item" data-go="beast://bookmarks"><span>Bookmarks</span><span class="shortcut-hint">Ctrl+Shift+O</span></div>' +
-      '      <div class="menu-item" data-go="beast://history"><span>History</span><span class="shortcut-hint">Ctrl+H</span></div>' +
-      '      <div class="menu-item" data-go="beast://downloads"><span>Downloads</span><span class="shortcut-hint">Ctrl+J</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://bookmarks"><span>Bookmarks</span><span class="shortcut-hint">Ctrl+Shift+O</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://history"><span>History</span><span class="shortcut-hint">Ctrl+H</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://downloads"><span>Downloads</span><span class="shortcut-hint">Ctrl+J</span></div>' +
       '      <div class="menu-divider"></div>' +
       '      <div class="menu-item" id="menu-incognito"><span>New Incognito Tab</span><span class="shortcut-hint">Ctrl+Shift+N</span></div>' +
-      '      <div class="menu-item" data-go="beast://shortcuts"><span>Keyboard Shortcuts</span></div>' +
-      '      <div class="menu-item" data-go="beast://site-settings"><span>Site Settings</span></div>' +
-      '      <div class="menu-item" data-go="beast://about"><span>About BEAST</span></div>' +
-      '      <div class="menu-item" data-go="beast://cookies"><span>Cookies</span></div>' +
-      '      <div class="menu-item" data-go="beast://autofill"><span>Autofill</span></div>' +
-      '      <div class="menu-item" data-go="beast://feedback"><span>Send Feedback</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://shortcuts"><span>Keyboard Shortcuts</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://site-settings"><span>Site Settings</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://about"><span>About SPARROW</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://cookies"><span>Cookies</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://autofill"><span>Autofill</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://feedback"><span>Send Feedback</span></div>' +
       '      <div class="menu-item" data-go="sparrow://save-login"><span>Save Login</span></div>' +
-      '      <div class="menu-item" data-go="beast://updates"><span>About &amp; Updates</span></div>' +
-      '      <div class="menu-item" data-go="beast://backup"><span>Backup &amp; Restore</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://updates"><span>About &amp; Updates</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://backup"><span>Backup &amp; Restore</span></div>' +
       '      <div class="menu-item" id="menu-print"><span>Print</span><span class="shortcut-hint">Ctrl+P</span></div>' +
       '      <div class="menu-divider"></div>' +
-      '      <div class="menu-item" data-go="beast://settings"><span>Settings</span><span class="shortcut-hint">Ctrl+,</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://settings"><span>Settings</span><span class="shortcut-hint">Ctrl+,</span></div>' +
       '    </div>' +
       '  </div>' +
       '</div>' +
@@ -190,9 +212,6 @@ const chromeInjectionJS = `
       '</div>' +
       '<div id="incognito-badge">Incognito Mode Active</div>';
     document.documentElement.insertBefore(root, document.documentElement.firstChild);
-    // Body content should render below the fixed chrome; putting the
-    // root at documentElement level (instead of inside body) keeps it
-    // immune to whatever the loaded page does to its own <body>.
 
     var activeTabId = null;
     var findDebounce = null;
@@ -205,7 +224,7 @@ const chromeInjectionJS = `
     window.goBack = async function () { await window.goBackNav(); };
     window.goForward = async function () { await window.goForwardNav(); };
     window.reload = function () { location.reload(); };
-    window.goHome = function () { window.go('beast://home'); };
+    window.goHome = function () { window.go('sparrow://home'); };
 
     async function navigateFromBar() {
       var val = document.getElementById('address-bar').value;
@@ -263,7 +282,7 @@ const chromeInjectionJS = `
 
     async function refreshStar(url) {
       var starBtn = document.getElementById('star-btn');
-      if (!url || url.indexOf('beast://') === 0) {
+      if (!url || url.indexOf('sparrow://') === 0) {
         starBtn.className = '';
         return;
       }
@@ -273,7 +292,7 @@ const chromeInjectionJS = `
 
     async function toggleStar() {
       var url = document.getElementById('address-bar').value;
-      if (!url || url.indexOf('beast://') === 0) return;
+      if (!url || url.indexOf('sparrow://') === 0) return;
       var nowSaved = await window.toggleBookmark(url, url);
       document.getElementById('star-btn').className = nowSaved ? 'saved' : '';
     }
@@ -281,8 +300,8 @@ const chromeInjectionJS = `
     async function updateTabTitleFromURL(url) {
       if (!url || activeTabId === null) return;
       var short = url.replace('https://', '').replace('http://', '').split('/')[0];
-      if (url.indexOf('beast://') === 0) short = url.replace('beast://', 'BEAST: ');
-      if (url.indexOf('data:text/html') === 0) short = 'BEAST';
+      if (url.indexOf('sparrow://') === 0) short = url.replace('sparrow://', 'SPARROW: ');
+      if (url.indexOf('data:text/html') === 0) short = 'SPARROW';
       await window.updateTabTitle(activeTabId, short, url);
       renderTabs();
     }
@@ -377,7 +396,7 @@ const chromeInjectionJS = `
     async function showSiteInfo(e) {
       e.stopPropagation();
       var url = document.getElementById('address-bar').value;
-      if (!url || url.indexOf('beast://') === 0) return;
+      if (!url || url.indexOf('sparrow://') === 0) return;
       var info = await window.getSiteInfo(url);
       alert(
         'Domain: ' + info.domain + '\\n' +
@@ -393,7 +412,7 @@ const chromeInjectionJS = `
       findDebounce = setTimeout(function () {
         var query = document.getElementById('find-input').value;
         try {
-          var count = window.__beastFind.search(query);
+          var count = window.__sparrowFind.search(query);
           document.getElementById('find-count').innerText = count > 0 ? '1/' + count : '0/0';
         } catch (e) {}
       }, 200);
@@ -401,16 +420,16 @@ const chromeInjectionJS = `
 
     function findNext() {
       try {
-        var idx = window.__beastFind.next();
-        var total = window.__beastFind.matches.length;
+        var idx = window.__sparrowFind.next();
+        var total = window.__sparrowFind.matches.length;
         document.getElementById('find-count').innerText = (idx + 1) + '/' + total;
       } catch (e) {}
     }
 
     function findPrev() {
       try {
-        var idx = window.__beastFind.prev();
-        var total = window.__beastFind.matches.length;
+        var idx = window.__sparrowFind.prev();
+        var total = window.__sparrowFind.matches.length;
         document.getElementById('find-count').innerText = (idx + 1) + '/' + total;
       } catch (e) {}
     }
@@ -421,7 +440,7 @@ const chromeInjectionJS = `
     }
 
     function closeFindBar() {
-      try { window.__beastFind.clear(); } catch (e) {}
+      try { window.__sparrowFind.clear(); } catch (e) {}
       document.getElementById('find-bar').classList.remove('show');
       document.getElementById('find-input').value = '';
       document.getElementById('find-count').innerText = '0/0';
@@ -460,6 +479,14 @@ const chromeInjectionJS = `
     document.getElementById('btn-pip').onclick = requestPiPForTab;
     document.getElementById('btn-screenshot').onclick = function () { window.captureScreenshot(); };
     document.getElementById('btn-notif').onclick = toggleNotifPanel;
+    document.getElementById('window-minimize').onclick = function (e) { e.stopPropagation(); window.minimizeWindow(); };
+    document.getElementById('window-fullscreen').onclick = function (e) { e.stopPropagation(); window.toggleFullscreenWindow(); };
+    document.getElementById('window-close').onclick = function (e) { e.stopPropagation(); window.closeWindow(); };
+    document.getElementById('window-titlebar').onmousedown = function (e) {
+      if (e.target.id === 'window-titlebar' || e.target.id === 'window-title') {
+        window.beginWindowDrag();
+      }
+    };
     document.getElementById('menu-btn').onclick = toggleMenu;
     document.getElementById('menu-incognito').onclick = openIncognito;
     document.getElementById('menu-print').onclick = printCurrentPage;
@@ -495,9 +522,9 @@ const chromeInjectionJS = `
       if (e.ctrlKey && e.key === 'l') { e.preventDefault(); addressBar.focus(); addressBar.select(); }
       if (e.ctrlKey && e.key === 'r') { e.preventDefault(); window.reload(); }
       if (e.ctrlKey && e.key === 'd') { e.preventDefault(); toggleStar(); }
-      if (e.ctrlKey && e.key === 'h') { e.preventDefault(); window.go('beast://history'); }
-      if (e.ctrlKey && e.key === 'j') { e.preventDefault(); window.go('beast://downloads'); }
-      if (e.ctrlKey && e.key === ',') { e.preventDefault(); window.go('beast://settings'); }
+      if (e.ctrlKey && e.key === 'h') { e.preventDefault(); window.go('sparrow://history'); }
+      if (e.ctrlKey && e.key === 'j') { e.preventDefault(); window.go('sparrow://downloads'); }
+      if (e.ctrlKey && e.key === ',') { e.preventDefault(); window.go('sparrow://settings'); }
       if (e.ctrlKey && e.key === 'f') { e.preventDefault(); openFindBar(); }
       if (e.ctrlKey && e.key === 'p') { e.preventDefault(); printCurrentPage(); }
     });

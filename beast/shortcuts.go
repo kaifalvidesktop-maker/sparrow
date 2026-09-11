@@ -1,16 +1,18 @@
 package main
 
+import "encoding/json"
+
 // ---------------------------------------------------
 // KEYBOARD SHORTCUTS REGISTRY
 // Actual key-capture happens in JS (keydown listener);
 // this is the canonical list used to generate the
-// beast://shortcuts help page and keep bindings consistent.
+// sparrow://shortcuts help page and keep bindings consistent.
 // ---------------------------------------------------
 
 type Shortcut struct {
-	Keys        string
-	Description string
-	Category    string
+	Keys        string `json:"Keys"`
+	Description string `json:"Description"`
+	Category    string `json:"Category"`
 }
 
 var shortcutList = []Shortcut{
@@ -42,12 +44,20 @@ func getAllShortcuts() []Shortcut {
 	return shortcutList
 }
 
+func shortcutsJSON() string {
+	data, err := json.Marshal(shortcutList)
+	if err != nil {
+		return "[]"
+	}
+	return string(data)
+}
+
 const shortcutsPageHTML = `
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Shortcuts</title>
+<title>SPARROW Shortcuts</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -90,7 +100,7 @@ const shortcutsPageHTML = `
   <h1>Keyboard Shortcuts</h1>
   <div id="scContainer"></div>
 <script>
-  const shortcuts = window.__SHORTCUTS__;
+  const shortcuts = window.__SHORTCUTS__ || [];
   const grouped = {};
   shortcuts.forEach(function(s) {
     if (!grouped[s.Category]) grouped[s.Category] = [];

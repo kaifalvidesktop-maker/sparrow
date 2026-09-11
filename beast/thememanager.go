@@ -203,7 +203,7 @@ func (tm *ThemeManager) GenerateThemePageHTML() string {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Themes - Beast Browser</title>
+    <title>Themes - Sparrow Browser</title>
     <style>
         body { background: #1a1a2e; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; }
         h1 { color: #e94560; border-bottom: 2px solid #e94560; padding-bottom: 10px; }
@@ -297,7 +297,7 @@ func (tm *ThemeManager) GenerateThemePageHTML() string {
     
     <script>
         function applyTheme(theme) {
-            window.location.href = 'beast://applytheme?theme=' + theme;
+            window.location.href = 'sparrow://applytheme?theme=' + theme;
         }
     </script>
 </body>

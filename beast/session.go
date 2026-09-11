@@ -31,7 +31,7 @@ func (sm *SessionManager) RecordClosed(title string, url string) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
-	if url == "" || url == "home" || url == "beast://home" {
+	if url == "" || url == "home" || url == "sparrow://home" {
 		return
 	}
 

@@ -1,7 +1,7 @@
 package main
 
 // ---------------------------------------------------
-// CUSTOM BEAST ERROR PAGES
+// CUSTOM SPARROW ERROR PAGES
 // ---------------------------------------------------
 
 func buildBlockedPageHTML(domain string) string {
@@ -24,7 +24,7 @@ func buildBlockedPageHTML(domain string) string {
 </head>
 <body>
   <div class="icon">&#128737;</div>
-  <h1>Blocked by BEAST Security Shield</h1>
+  <h1>Blocked by SPARROW Security Shield</h1>
   <p>The domain <span class="domain">` + domain + `</span> was blocked because it matches a known ad or tracker pattern. You can adjust this in Settings if it was blocked by mistake.</p>
 </body>
 </html>
@@ -55,7 +55,7 @@ const noInternetPageHTML = `
 <body>
   <div class="icon">&#128225;</div>
   <h1>No Internet Connection</h1>
-  <p>BEAST can't reach this page. Check your network connection and try again.</p>
+  <p>SPARROW can't reach this page. Check your network connection and try again.</p>
   <button onclick="reload()">Try Again</button>
 </body>
 </html>
@@ -85,7 +85,7 @@ const notFoundPageHTML = `
 <body>
   <div class="icon">&#128269;</div>
   <h1>Page Not Found</h1>
-  <p>BEAST couldn't find that page. It may have been moved or no longer exists.</p>
+  <p>SPARROW couldn't find that page. It may have been moved or no longer exists.</p>
   <button onclick="goHome()">Go Home</button>
 </body>
 </html>

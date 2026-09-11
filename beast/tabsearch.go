@@ -81,5 +81,5 @@ func scoreMatch(text string, query string) int {
 }
 
 const tabSearchOverlayJS = `
-window.__beastTabSearchOpen = true;
+window.__sparrowTabSearchOpen = true;
 `

@@ -51,7 +51,7 @@ const screenshotCaptureJS = `
 (function() {
 	if (typeof html2canvasFallback === 'undefined') {
 		// Lightweight fallback: capture what's simple to capture
-		// (full DOM-to-canvas rasterization needs a library BEAST
+		// (full DOM-to-canvas rasterization needs a library SPARROW
 		// doesn't bundle yet, so this captures a solid snapshot of
 		// text/layout using the browser's native print-to-canvas path
 		// where available, else reports unsupported).
@@ -66,7 +66,7 @@ const screenshotCaptureJS = `
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = '#888';
 		ctx.font = '14px sans-serif';
-		ctx.fillText('BEAST screenshot: ' + document.title, 20, 30);
+		ctx.fillText('SPARROW screenshot: ' + document.title, 20, 30);
 
 		var dataUrl = canvas.toDataURL('image/png');
 		window.reportScreenshot(dataUrl, document.title);

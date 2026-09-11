@@ -11,19 +11,13 @@ type AutocompleteResult struct {
 }
 
 func getAutocompleteResults(query string) []AutocompleteResult {
-	query = strings.TrimSpace(
-		strings.ToLower(query),
-	)
+	query = strings.TrimSpace(strings.ToLower(query))
 
 	if query == "" {
 		return []AutocompleteResult{}
 	}
 
-	results := make(
-		[]AutocompleteResult,
-		0,
-		10,
-	)
+	results := make([]AutocompleteResult, 0, 10)
 
 	// History suggestions
 	history := history.GetRecent(50)
@@ -31,23 +25,14 @@ func getAutocompleteResults(query string) []AutocompleteResult {
 	for i := len(history) - 1; i >= 0; i-- {
 		item := history[i]
 
-		if strings.Contains(
-			strings.ToLower(item.URL),
-			query,
-		) ||
-			strings.Contains(
-				strings.ToLower(item.Title),
-				query,
-			) {
+		if strings.Contains(strings.ToLower(item.URL), query) ||
+			strings.Contains(strings.ToLower(item.Title), query) {
 
-			results = append(
-				results,
-				AutocompleteResult{
-					Text:  item.URL,
-					URL:   item.URL,
-					Title: item.Title,
-				},
-			)
+			results = append(results, AutocompleteResult{
+				Text:  item.URL,
+				URL:   item.URL,
+				Title: item.Title,
+			})
 
 			if len(results) >= 10 {
 				return results
@@ -61,17 +46,10 @@ func getAutocompleteResults(query string) []AutocompleteResult {
 	for i := len(bookmarks) - 1; i >= 0; i-- {
 		item := bookmarks[i]
 
-		if strings.Contains(
-			strings.ToLower(item.URL),
-			query,
-		) ||
-			strings.Contains(
-				strings.ToLower(item.Title),
-				query,
-			) {
+		if strings.Contains(strings.ToLower(item.URL), query) ||
+			strings.Contains(strings.ToLower(item.Title), query) {
 
 			found := false
-
 			for _, r := range results {
 				if r.URL == item.URL {
 					found = true
@@ -83,14 +61,11 @@ func getAutocompleteResults(query string) []AutocompleteResult {
 				continue
 			}
 
-			results = append(
-				results,
-				AutocompleteResult{
-					Text:  item.URL,
-					URL:   item.URL,
-					Title: item.Title,
-				},
-			)
+			results = append(results, AutocompleteResult{
+				Text:  item.URL,
+				URL:   item.URL,
+				Title: item.Title,
+			})
 
 			if len(results) >= 10 {
 				return results
@@ -123,11 +98,7 @@ func autocompleteHTML() string {
 (function () {
 	"use strict";
 
-	const input =
-		document.querySelector(
-			'input[type="text"]'
-		);
-
+	const input = document.querySelector('input[type="text"]');
 	if (!input) {
 		return;
 	}
@@ -140,19 +111,16 @@ func autocompleteHTML() string {
 		}
 
 		box = document.createElement("div");
-
 		box.style.position = "fixed";
 		box.style.zIndex = "2147483647";
 		box.style.background = "#ffffff";
 		box.style.border = "1px solid #dadce0";
 		box.style.borderRadius = "10px";
-		box.style.boxShadow =
-			"0 4px 18px rgba(0,0,0,.15)";
+		box.style.boxShadow = "0 4px 18px rgba(0,0,0,.15)";
 		box.style.overflow = "hidden";
 		box.style.display = "none";
 
 		document.body.appendChild(box);
-
 		return box;
 	}
 
@@ -164,7 +132,6 @@ func autocompleteHTML() string {
 
 	function showResults(results) {
 		const b = createBox();
-
 		b.innerHTML = "";
 
 		if (!results || results.length === 0) {
@@ -172,31 +139,16 @@ func autocompleteHTML() string {
 			return;
 		}
 
-		const rect =
-			input.getBoundingClientRect();
-
-		b.style.left =
-			rect.left + "px";
-
-		b.style.top =
-			(rect.bottom + 4) + "px";
-
-		b.style.width =
-			rect.width + "px";
+		const rect = input.getBoundingClientRect();
+		b.style.left = rect.left + "px";
+		b.style.top = (rect.bottom + 4) + "px";
+		b.style.width = rect.width + "px";
 
 		results.forEach(function (item) {
-
-			const row =
-				document.createElement("div");
-
-			row.style.padding =
-				"10px 14px";
-
-			row.style.cursor =
-				"pointer";
-
-			row.style.borderBottom =
-				"1px solid #f1f3f4";
+			const row = document.createElement("div");
+			row.style.padding = "10px 14px";
+			row.style.cursor = "pointer";
+			row.style.borderBottom = "1px solid #f1f3f4";
 
 			row.innerHTML =
 				"<div style='font-size:13px;color:#202124'>" +
@@ -206,34 +158,22 @@ func autocompleteHTML() string {
 				escapeHTML(item.URL) +
 				"</div>";
 
-			row.onmouseenter =
-				function () {
-					row.style.background =
-						"#f1f3f4";
-				};
+			row.onmouseenter = function () {
+				row.style.background = "#f1f3f4";
+			};
 
-			row.onmouseleave =
-				function () {
-					row.style.background =
-						"#ffffff";
-				};
+			row.onmouseleave = function () {
+				row.style.background = "#ffffff";
+			};
 
-			row.onclick =
-				function () {
+			row.onclick = function () {
+				input.value = item.URL;
+				hideBox();
 
-					input.value =
-						item.URL;
-
-					hideBox();
-
-					if (
-						window.realNavigate
-					) {
-						window.realNavigate(
-							item.URL
-						);
-					}
-				};
+				if (window.realNavigate) {
+					window.realNavigate(item.URL);
+				}
+			};
 
 			b.appendChild(row);
 		});
@@ -250,63 +190,36 @@ func autocompleteHTML() string {
 			.replace(/'/g, "&#039;");
 	}
 
-	input.addEventListener(
-		"input",
-		async function () {
+	input.addEventListener("input", async function () {
+		const q = input.value.trim();
+		if (!q) {
+			hideBox();
+			return;
+		}
 
-			const q =
-				input.value.trim();
-
-			if (!q) {
-				hideBox();
-				return;
-			}
-
-			try {
-
-				const results =
-					await window.getAutocomplete(
-						q
-					);
-
+		try {
+			if (window.getAutocomplete) {
+				const results = await window.getAutocomplete(q);
 				showResults(results);
-
-			} catch (e) {
-				hideBox();
 			}
+		} catch (e) {
+			hideBox();
 		}
-	);
+	});
 
-	input.addEventListener(
-		"keydown",
-		function (event) {
-
-			if (
-				event.key === "Escape"
-			) {
-				hideBox();
-			}
+	input.addEventListener("keydown", function (event) {
+		if (event.key === "Escape") {
+			hideBox();
 		}
-	);
+	});
 
-	document.addEventListener(
-		"click",
-		function (event) {
-
-			if (
-				event.target !== input &&
-				(!box ||
-					!box.contains(event.target))
-			) {
-				hideBox();
-			}
+	document.addEventListener("click", function (event) {
+		if (event.target !== input && (!box || !box.contains(event.target))) {
+			hideBox();
 		}
-	);
+	});
 
-	window.addEventListener(
-		"resize",
-		hideBox
-	);
+	window.addEventListener("resize", hideBox);
 })();
 </script>
 `

@@ -53,11 +53,11 @@ func (fd *ForceDarkManager) ShouldApply(tabID int) bool {
 // Injectable CSS-based dark mode filter (safe fallback for any site)
 const forceDarkJS = `
 (function() {
-	var existing = document.getElementById('beast-force-dark');
+	var existing = document.getElementById('sparrow-force-dark');
 	if (existing) { existing.remove(); return; }
 
 	var style = document.createElement('style');
-	style.id = 'beast-force-dark';
+	style.id = 'sparrow-force-dark';
 	style.innerHTML =
 		'html { filter: invert(1) hue-rotate(180deg) !important; background: #fff !important; }' +
 		'img, video, picture, iframe, canvas, svg, [style*="background-image"] { filter: invert(1) hue-rotate(180deg) !important; }';

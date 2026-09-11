@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -50,6 +51,11 @@ type persistedState struct {
 	ClosedTabs  []ClosedTab      `json:"closedTabs"`
 	SavedLogins []StoredPassword `json:"savedLogins"`
 }
+
+var (
+	autosaveStopChan chan struct{}
+	autosaveOnce     sync.Once
+)
 
 func stateFilePath() (string, error) {
 	dir, err := os.UserConfigDir()
@@ -214,9 +220,33 @@ func startAutosave(interval time.Duration, stop <-chan struct{}) {
 	}()
 }
 
+// InitPersistence loads existing state and starts the 30s background ticker.
+func InitPersistence() {
+	if state := loadPersistedState(); state != nil {
+		applyPersistedState(state)
+		log.Println("[persistence] persisted state loaded successfully")
+	}
+
+	autosaveOnce.Do(func() {
+		autosaveStopChan = make(chan struct{})
+		startAutosave(30*time.Second, autosaveStopChan)
+		log.Println("[persistence] 30s autosave timer started")
+	})
+}
+
+// StopPersistence halts background autosave and does a final write to disk on shutdown.
+func StopPersistence() {
+	if autosaveStopChan != nil {
+		close(autosaveStopChan)
+	}
+	if err := savePersistedState(); err != nil {
+		log.Println("[persistence] final shutdown save failed:", err)
+	} else {
+		log.Println("[persistence] state saved successfully on shutdown")
+	}
+}
+
 // --- tiny local helpers so this file has zero extra imports beyond stdlib ---
-// (named with a persist* prefix to avoid colliding with the itoa/atoi
-// helpers already defined in incognito.go)
 
 func persistIntToStr(n int) string {
 	if n == 0 {

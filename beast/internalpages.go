@@ -1,7 +1,7 @@
 package main
 
 // ---------------------------------------------------
-// BEAST INTERNAL PAGES (beast://settings, beast://bookmarks, etc.)
+// SPARROW INTERNAL PAGES (sparrow://settings, sparrow://bookmarks, etc.)
 // ---------------------------------------------------
 
 const settingsPageHTML = `
@@ -9,7 +9,7 @@ const settingsPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Settings</title>
+<title>SPARROW Settings</title>
 <style>
   * { box-sizing: border-box; }
 
@@ -207,11 +207,11 @@ const settingsPageHTML = `
 <body>
 
   <div class="sidebar">
-    <div class="brand">BEAST</div>
+    <div class="brand">SPARROW</div>
     <div class="item active">General</div>
-    <div class="item" onclick="window.realNavigate('beast://bookmarks')">Bookmarks</div>
-    <div class="item" onclick="window.realNavigate('beast://downloads')">Downloads</div>
-    <div class="item" onclick="window.realNavigate('beast://history')">History</div>
+    <div class="item" onclick="window.realNavigate('sparrow://bookmarks')">Bookmarks</div>
+    <div class="item" onclick="window.realNavigate('sparrow://downloads')">Downloads</div>
+    <div class="item" onclick="window.realNavigate('sparrow://history')">History</div>
   </div>
 
   <div class="content">
@@ -219,7 +219,7 @@ const settingsPageHTML = `
 
     <div class="card">
       <div class="card-title">Appearance</div>
-      <div class="card-desc">Choose how BEAST looks</div>
+      <div class="card-desc">Choose how SPARROW looks</div>
       <div class="row">
         <div class="row-label">Dark Theme</div>
         <div class="switch on" id="themeSwitch" onclick="toggleTheme()"><div class="knob"></div></div>
@@ -243,14 +243,14 @@ const settingsPageHTML = `
       <div class="card-title">Homepage</div>
       <div class="card-desc">Page shown when you open a new tab</div>
       <div class="row">
-        <input type="text" id="homepageInput" placeholder="beast://home">
+        <input type="text" id="homepageInput" placeholder="sparrow://home">
         <button class="btn" onclick="saveHomepage()">Save</button>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">Privacy & Security Shield</div>
-      <div class="card-desc">Control what BEAST blocks automatically</div>
+      <div class="card-desc">Control what SPARROW blocks automatically</div>
 
       <div class="row">
         <div class="row-label">Block Ads</div>
@@ -287,7 +287,7 @@ const settingsPageHTML = `
 
     <div class="card">
       <div class="card-title">Data & Privacy</div>
-      <div class="card-desc">BEAST keeps nothing on disk. History and cache live only in RAM.</div>
+      <div class="card-desc">SPARROW keeps nothing on disk. History and cache live only in RAM.</div>
 
       <div class="row">
         <div class="row-label">Clear all browsing history</div>
@@ -428,7 +428,7 @@ const bookmarksPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Bookmarks</title>
+<title>SPARROW Bookmarks</title>
 <style>
   * { box-sizing: border-box; }
 
@@ -585,7 +585,7 @@ const bookmarksPageHTML = `
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'beast-bookmarks.json';
+    a.download = 'sparrow-bookmarks.json';
     a.click();
 
     URL.revokeObjectURL(url);
@@ -671,7 +671,7 @@ const downloadsPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Downloads</title>
+<title>SPARROW Downloads</title>
 <style>
   * { box-sizing: border-box; }
 
@@ -811,7 +811,7 @@ const historyPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST History</title>
+<title>SPARROW History</title>
 <style>
   * { box-sizing: border-box; }
 
@@ -896,7 +896,7 @@ const historyPageHTML = `
 <h1>History</h1>
 
 <div class="sub">
-  Stored only in RAM — cleared automatically when BEAST closes
+  Stored only in RAM — cleared automatically when SPARROW closes
 </div>
 
 <div class="btnbar">

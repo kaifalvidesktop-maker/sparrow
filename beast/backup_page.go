@@ -5,7 +5,7 @@ const backupPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Backup & Restore</title>
+<title>SPARROW Backup & Restore</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -45,7 +45,7 @@ const backupPageHTML = `
 
   <div class="card">
     <div class="card-title">Restore from Backup</div>
-    <div class="card-desc">Select a previously saved BEAST backup file to restore your data.</div>
+    <div class="card-desc">Select a previously saved SPARROW backup file to restore your data.</div>
     <button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Choose Backup File</button>
     <input type="file" id="restoreFile" accept=".json" style="display:none;" onchange="restoreBackup(event)">
     <div class="status" id="restoreStatus"></div>

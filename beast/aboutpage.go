@@ -1,14 +1,14 @@
 package main
 
-const beastVersion = "0.1.0-alpha"
-const beastBuildDate = "2026"
+const sparrowVersion = "0.1.0-alpha"
+const sparrowBuildDate = "2026"
 
 const aboutPageHTML = `
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>About BEAST</title>
+<title>About SPARROW</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -35,8 +35,8 @@ const aboutPageHTML = `
 </style>
 </head>
 <body>
-  <div class="logo">BEAST</div>
-  <div class="version">Version ` + beastVersion + ` &middot; Built ` + beastBuildDate + `</div>
+  <div class="logo">SPARROW</div>
+  <div class="version">Version ` + sparrowVersion + ` &middot; Built ` + sparrowBuildDate + `</div>
 
   <div class="info-card">
     <div class="info-row"><span class="info-label">Engine</span><span class="info-value">System WebView (Chromium/WebKit-based)</span></div>

@@ -7,7 +7,7 @@ import (
 
 // ---------------------------------------------------
 // CRASH RECOVERY (tracks open tabs so they can be restored
-// if BEAST is force-closed unexpectedly — kept in RAM and
+// if SPARROW is force-closed unexpectedly — kept in RAM and
 // mirrored to a small recovery file that's deleted on clean exit)
 // ---------------------------------------------------
 

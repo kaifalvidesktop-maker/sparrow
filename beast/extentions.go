@@ -172,7 +172,7 @@ func (em *ExtensionManager) GenerateExtensionsPageHTML() string {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Extensions - Beast Browser</title>
+    <title>Extensions - Sparrow Browser</title>
     <style>
         body { background: #1a1a2e; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; }
         h1 { color: #e94560; border-bottom: 2px solid #e94560; padding-bottom: 10px; }
@@ -290,15 +290,15 @@ func (em *ExtensionManager) GenerateExtensionsPageHTML() string {
         function installExtension() {
             const path = document.getElementById('extPath').value;
             if(path) {
-                window.location.href = 'beast://installextension?path=' + encodeURIComponent(path);
+                window.location.href = 'sparrow://installextension?path=' + encodeURIComponent(path);
             }
         }
         function toggleExtension(id) {
-            window.location.href = 'beast://toggleextension?id=' + id;
+            window.location.href = 'sparrow://toggleextension?id=' + id;
         }
         function uninstallExtension(id) {
             if(confirm('Remove this extension?')) {
-                window.location.href = 'beast://uninstallextension?id=' + id;
+                window.location.href = 'sparrow://uninstallextension?id=' + id;
             }
         }
     </script>

@@ -4,7 +4,7 @@ import "sync"
 
 // ---------------------------------------------------
 // PICTURE-IN-PICTURE HELPER
-// Wraps the browser-native PiP API so BEAST can trigger it
+// Wraps the browser-native PiP API so SPARROW can trigger it
 // from the toolbar instead of requiring a right-click on video
 // ---------------------------------------------------
 

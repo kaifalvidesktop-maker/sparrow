@@ -2,7 +2,7 @@ package main
 
 // ---------------------------------------------------
 // UPDATE CHECKER (informational page — real update
-// downloading isn't wired up yet since BEAST has no
+// downloading isn't wired up yet since SPARROW has no
 // backend server; this documents the version/changelog)
 // ---------------------------------------------------
 
@@ -12,12 +12,12 @@ type ChangelogEntry struct {
 	Changes []string
 }
 
-var beastChangelog = []ChangelogEntry{
+var sparrowChangelog = []ChangelogEntry{
 	{
 		Version: "0.1.0-alpha",
 		Date:    "2026",
 		Changes: []string{
-			"Initial BEAST build: tabs, history, bookmarks, downloads",
+			"Initial SPARROW build: tabs, history, bookmarks, downloads",
 			"Security Shield with ad/tracker blocking",
 			"Incognito mode, reader mode, zoom controls",
 			"Encrypted password manager (AES-256)",
@@ -31,7 +31,7 @@ const updatesPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Updates</title>
+<title>SPARROW Updates</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -58,10 +58,10 @@ const updatesPageHTML = `
 </style>
 </head>
 <body>
-  <h1>BEAST Updates</h1>
+  <h1>SPARROW Updates</h1>
   <div class="current">
     <div class="dot"></div>
-    <div class="current-text">You're running <b>BEAST ` + beastVersion + `</b> — the latest version.</div>
+    <div class="current-text">You're running <b>SPARROW ` + sparrowVersion + `</b> — the latest version.</div>
   </div>
   <div id="changelogList"></div>
 

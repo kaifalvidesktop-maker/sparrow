@@ -43,9 +43,9 @@ func (r *ReaderModeManager) Clear(tabID int) {
 // Injectable JS that strips clutter and shows clean article view
 const readerModeJS = `
 (function() {
-	if (document.getElementById('beast-reader-style')) return;
+	if (document.getElementById('sparrow-reader-style')) return;
 	var style = document.createElement('style');
-	style.id = 'beast-reader-style';
+	style.id = 'sparrow-reader-style';
 	style.innerHTML =
 		'body > *:not(article):not(main) { display: none !important; }' +
 		'article, main { max-width: 700px !important; margin: 40px auto !important; ' +

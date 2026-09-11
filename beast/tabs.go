@@ -161,7 +161,7 @@ func (tm *TabManager) CloseAllTabs() {
 
 // ---------------------------------------------------
 // PER-TAB BACK/FORWARD HISTORY
-// (Needed because BEAST now does real top-level navigation
+// (Needed because SPARROW now does real top-level navigation
 // instead of loading pages inside an iframe, so nothing in
 // the page's own JS survives between navigations. The Go
 // side is the only place that can remember where a tab has

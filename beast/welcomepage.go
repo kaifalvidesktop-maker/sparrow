@@ -9,7 +9,7 @@ const welcomePageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Welcome to BEAST</title>
+<title>Welcome to SPARROW</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -46,7 +46,7 @@ const welcomePageHTML = `
 </style>
 </head>
 <body>
-  <div class="logo">BEAST</div>
+  <div class="logo">SPARROW</div>
   <div class="welcome-sub">Fast. Private. Yours. No account needed.</div>
 
   <div class="features">
@@ -58,7 +58,7 @@ const welcomePageHTML = `
     <div class="feature-card">
       <div class="feature-icon">&#128274;</div>
       <div class="feature-title">Nothing Saved to Disk</div>
-      <div class="feature-desc">History lives only in RAM and disappears when you close BEAST.</div>
+      <div class="feature-desc">History lives only in RAM and disappears when you close SPARROW.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">&#9889;</div>
@@ -72,7 +72,7 @@ const welcomePageHTML = `
     </div>
   </div>
 
-  <button class="start-btn" onclick="go('beast://home')">Start Browsing</button>
+  <button class="start-btn" onclick="go('sparrow://home')">Start Browsing</button>
 </body>
 </html>
 `

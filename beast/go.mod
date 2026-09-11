@@ -1,4 +1,4 @@
-module beast
+module sparrow
 
 go 1.26.3
 

@@ -184,7 +184,7 @@ func GenerateTaskManagerHTML(tm *TaskManager) string {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Task Manager - Beast Browser</title>
+    <title>Task Manager - Sparrow Browser</title>
     <style>
         body { 
             background: #1a1a2e; 
