@@ -43,11 +43,12 @@ func (tm *TabManager) NewTab(url string) *Tab {
 	}
 
 	tab := &Tab{
-		ID:        tm.NextID,
-		Title:     "New Tab",
-		URL:       url,
-		CreatedAt: time.Now(),
-		IsActive:  true,
+		ID:         tm.NextID,
+		Title:      "New Tab",
+		URL:        url,
+		CreatedAt:  time.Now(),
+		IsActive:   true,
+		HistoryPos: -1,
 	}
 
 	tm.Tabs = append(tm.Tabs, tab)
@@ -175,6 +176,9 @@ func (tm *TabManager) RecordNavigation(id int, url string) {
 
 	for _, t := range tm.Tabs {
 		if t.ID == id {
+			if t.HistoryPos < -1 || t.HistoryPos >= len(t.History) {
+				t.HistoryPos = len(t.History) - 1
+			}
 			t.History = append(t.History[:t.HistoryPos+1], url)
 			t.HistoryPos = len(t.History) - 1
 			t.URL = url

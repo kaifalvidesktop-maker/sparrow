@@ -172,7 +172,7 @@ const chromeInjectionJS = `
       '      <div class="menu-item" data-go="beast://cookies"><span>Cookies</span></div>' +
       '      <div class="menu-item" data-go="beast://autofill"><span>Autofill</span></div>' +
       '      <div class="menu-item" data-go="beast://feedback"><span>Send Feedback</span></div>' +
-      '      <div class="menu-item" data-go="beast://passwords"><span>Passwords</span></div>' +
+      '      <div class="menu-item" data-go="sparrow://save-login"><span>Save Login</span></div>' +
       '      <div class="menu-item" data-go="beast://updates"><span>About &amp; Updates</span></div>' +
       '      <div class="menu-item" data-go="beast://backup"><span>Backup &amp; Restore</span></div>' +
       '      <div class="menu-item" id="menu-print"><span>Print</span><span class="shortcut-hint">Ctrl+P</span></div>' +

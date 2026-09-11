@@ -12,17 +12,17 @@ import (
 // PERSISTENCE LAYER
 // ---------------------------------------------------
 //
-// BEAST keeps browsing HISTORY, saved PASSWORDS, and AUTOFILL data
-// strictly in RAM (privacy-first: nothing sensitive ever touches disk).
+// Sparrow keeps browsing history and autofill data in RAM. Saved login
+// records are persisted as AES-GCM ciphertext and never as plain passwords.
 //
 // Everything else that a normal browser is expected to remember between
 // launches - bookmarks, settings, zoom levels, and the recently-closed
 // tab list - is persisted here as a single small JSON file under the
 // user's config directory:
 //
-//   Windows: %AppData%\Beast\state.json
-//   Linux:   ~/.config/Beast/state.json
-//   macOS:   ~/Library/Application Support/Beast/state.json
+//   Windows: %AppData%\Sparrow\state.json
+//   Linux:   ~/.config/Sparrow/state.json
+//   macOS:   ~/Library/Application Support/Sparrow/state.json
 //
 // The file is written on a 30s autosave tick and once more on shutdown,
 // so a crash loses at most ~30s of bookmark/setting changes - nothing
@@ -40,14 +40,15 @@ type persistedState struct {
 	DownloadPath        string `json:"downloadPath"`
 
 	// Bookmarks snapshot
-	Bookmarks       []*Bookmark `json:"bookmarks"`
-	NextBookmarkID  int         `json:"nextBookmarkId"`
+	Bookmarks      []*Bookmark `json:"bookmarks"`
+	NextBookmarkID int         `json:"nextBookmarkId"`
 
 	// Zoom levels (per-URL, since tab IDs don't survive a restart)
 	ZoomByURL map[string]float64 `json:"zoomByUrl"`
 
 	// Recently closed tabs
-	ClosedTabs []ClosedTab `json:"closedTabs"`
+	ClosedTabs  []ClosedTab      `json:"closedTabs"`
+	SavedLogins []StoredPassword `json:"savedLogins"`
 }
 
 func stateFilePath() (string, error) {
@@ -55,7 +56,7 @@ func stateFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	appDir := filepath.Join(dir, "Beast")
+	appDir := filepath.Join(dir, "Sparrow")
 	if err := os.MkdirAll(appDir, 0o755); err != nil {
 		return "", err
 	}
@@ -94,6 +95,8 @@ func buildPersistedState() *persistedState {
 	sessionManager.mu.Lock()
 	s.ClosedTabs = append([]ClosedTab{}, sessionManager.History...)
 	sessionManager.mu.Unlock()
+
+	s.SavedLogins = passwordVault.Snapshot()
 
 	return &s
 }
@@ -143,6 +146,8 @@ func applyPersistedState(s *persistedState) {
 		sessionManager.History = s.ClosedTabs
 	}
 	sessionManager.mu.Unlock()
+
+	passwordVault.Restore(s.SavedLogins)
 }
 
 // loadPersistedState reads state.json if present. Missing file is not

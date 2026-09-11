@@ -5,7 +5,7 @@ const passwordsPageHTML = `
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BEAST Passwords</title>
+<title>Sparrow Save Login</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -66,13 +66,13 @@ const passwordsPageHTML = `
 </style>
 </head>
 <body>
-  <h1>Passwords</h1>
-  <div class="sub">Encrypted with AES-256, stored only in memory. Locked automatically when BEAST closes.</div>
+  <h1>Save Login</h1>
+  <div class="sub">Save website logins encrypted on this device. The master password is required to unlock them.</div>
 
   <div class="lock-screen" id="lockScreen">
     <div class="lock-icon">&#128274;</div>
     <input type="password" id="masterInput" placeholder="Enter master password to unlock">
-    <button class="btn" onclick="unlockVault()">Unlock Vault</button>
+    <button class="btn" onclick="unlockVault()">Unlock Saved Logins</button>
   </div>
 
   <div class="vault-view" id="vaultView">
@@ -96,7 +96,11 @@ const passwordsPageHTML = `
   async function unlockVault() {
     const pw = document.getElementById('masterInput').value;
     if (!pw) return;
-    await window.unlockVault(pw);
+    const unlocked = await window.unlockVault(pw);
+    if (!unlocked) {
+      alert('That master password did not unlock the saved logins.');
+      return;
+    }
     document.getElementById('lockScreen').classList.add('hide');
     document.getElementById('vaultView').classList.add('show');
     loadPasswords();
@@ -124,7 +128,11 @@ const passwordsPageHTML = `
     const password = document.getElementById('new-password').value;
     if (!domain || !password) return;
 
-    await window.savePasswordEntry(domain, username, password);
+    const saved = await window.savePasswordEntry(domain, username, password);
+    if (!saved) {
+      alert('Could not save this login.');
+      return;
+    }
     document.getElementById('new-domain').value = '';
     document.getElementById('new-username').value = '';
     document.getElementById('new-password').value = '';

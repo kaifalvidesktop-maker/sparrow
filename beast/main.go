@@ -115,16 +115,16 @@ func (h *RAMHistory) Add(url string, title string) {
 	})
 }
 
-// Delete history entries older than given duration
-func (h *RAMHistory) DeleteOlderThan(d time.Duration) {
+// Delete history entries that happened AFTER the given cutoff time
+// (i.e. keep only entries older than cutoff). Used by the time-scoped
+// "Clear Last Hour" / "Clear Today" buttons.
+func (h *RAMHistory) DeleteSince(cutoff time.Time) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	cutoff := time.Now().Add(-d)
 	newEntries := []HistoryEntry{}
-
 	for _, entry := range h.Entries {
-		if entry.Time.After(cutoff) {
+		if entry.Time.Before(cutoff) {
 			newEntries = append(newEntries, entry)
 		}
 	}
@@ -142,7 +142,10 @@ func (h *RAMHistory) DeleteAll() {
 func (h *RAMHistory) GetAll() []HistoryEntry {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	return h.Entries
+
+	entries := make([]HistoryEntry, len(h.Entries))
+	copy(entries, h.Entries)
+	return entries
 }
 
 // Get most recent N entries (used by beast://history page and autocomplete)
@@ -150,10 +153,18 @@ func (h *RAMHistory) GetRecent(limit int) []HistoryEntry {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	if len(h.Entries) <= limit {
-		return h.Entries
+	if limit <= 0 {
+		return []HistoryEntry{}
 	}
-	return h.Entries[len(h.Entries)-limit:]
+
+	start := 0
+	if len(h.Entries) > limit {
+		start = len(h.Entries) - limit
+	}
+
+	entries := make([]HistoryEntry, len(h.Entries)-start)
+	copy(entries, h.Entries[start:])
+	return entries
 }
 
 // ---------------------------------------------------
@@ -313,9 +324,11 @@ func main() {
 	w.Bind("clearHistory", func(scope string) {
 		switch scope {
 		case "1hour":
-			history.DeleteOlderThan(1 * time.Hour)
+			history.DeleteSince(time.Now().Add(-1 * time.Hour))
 		case "today":
-			history.DeleteOlderThan(24 * time.Hour)
+			now := time.Now()
+			startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+			history.DeleteSince(startOfDay)
 		case "all":
 			history.DeleteAll()
 		}

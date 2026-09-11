@@ -1,117 +1,313 @@
 package main
 
 import (
-	"sort"
 	"strings"
-	"sync"
 )
 
-// ---------------------------------------------------
-// ADDRESS BAR AUTOCOMPLETE / SUGGESTION ENGINE
-// Combines History + Bookmarks + common site guesses
-// ---------------------------------------------------
-
-type Suggestion struct {
-	Text   string
-	URL    string
-	Source string // "history", "bookmark", "search"
+type AutocompleteResult struct {
+	Text  string `json:"text"`
+	URL   string `json:"url"`
+	Title string `json:"title"`
 }
 
-var commonSites = []string{
-	"youtube.com", "facebook.com", "github.com", "chat.openai.com",
-	"google.com", "wikipedia.org", "reddit.com", "twitter.com",
-	"instagram.com", "amazon.com", "netflix.com", "stackoverflow.com",
-}
+func getAutocompleteResults(query string) []AutocompleteResult {
+	query = strings.TrimSpace(
+		strings.ToLower(query),
+	)
 
-type SuggestionEngine struct {
-	mu sync.Mutex
-}
-
-var suggestEngine = &SuggestionEngine{}
-
-// GetSuggestions returns up to `limit` ranked suggestions for a partial input
-func (se *SuggestionEngine) GetSuggestions(partial string, limit int) []Suggestion {
-	se.mu.Lock()
-	defer se.mu.Unlock()
-
-	partial = strings.ToLower(strings.TrimSpace(partial))
-	if partial == "" {
-		return []Suggestion{}
+	if query == "" {
+		return []AutocompleteResult{}
 	}
 
-	results := []Suggestion{}
-	seen := make(map[string]bool)
+	results := make(
+		[]AutocompleteResult,
+		0,
+		10,
+	)
 
-	// 1. Bookmarks (highest priority - user explicitly saved these)
-	for _, b := range bookmarkManager.GetAll() {
-		lowerTitle := strings.ToLower(b.Title)
-		lowerURL := strings.ToLower(b.URL)
-		if strings.Contains(lowerTitle, partial) || strings.Contains(lowerURL, partial) {
-			if !seen[b.URL] {
-				results = append(results, Suggestion{Text: b.Title, URL: b.URL, Source: "bookmark"})
-				seen[b.URL] = true
+	// History suggestions
+	history := history.GetRecent(50)
+
+	for i := len(history) - 1; i >= 0; i-- {
+		item := history[i]
+
+		if strings.Contains(
+			strings.ToLower(item.URL),
+			query,
+		) ||
+			strings.Contains(
+				strings.ToLower(item.Title),
+				query,
+			) {
+
+			results = append(
+				results,
+				AutocompleteResult{
+					Text:  item.URL,
+					URL:   item.URL,
+					Title: item.Title,
+				},
+			)
+
+			if len(results) >= 10 {
+				return results
 			}
 		}
 	}
 
-	// 2. History (recent visits matching)
-	recent := history.GetRecent(300)
-	for i := len(recent) - 1; i >= 0; i-- {
-		entry := recent[i]
-		lowerURL := strings.ToLower(entry.URL)
-		if strings.Contains(lowerURL, partial) && !seen[entry.URL] {
-			results = append(results, Suggestion{Text: entry.URL, URL: entry.URL, Source: "history"})
-			seen[entry.URL] = true
-		}
-		if len(results) >= limit*2 {
-			break
+	// Bookmarks suggestions
+	bookmarks := bookmarkManager.GetAll()
+
+	for i := len(bookmarks) - 1; i >= 0; i-- {
+		item := bookmarks[i]
+
+		if strings.Contains(
+			strings.ToLower(item.URL),
+			query,
+		) ||
+			strings.Contains(
+				strings.ToLower(item.Title),
+				query,
+			) {
+
+			found := false
+
+			for _, r := range results {
+				if r.URL == item.URL {
+					found = true
+					break
+				}
+			}
+
+			if found {
+				continue
+			}
+
+			results = append(
+				results,
+				AutocompleteResult{
+					Text:  item.URL,
+					URL:   item.URL,
+					Title: item.Title,
+				},
+			)
+
+			if len(results) >= 10 {
+				return results
+			}
 		}
 	}
 
-	// 3. Common site guesses (e.g. typing "you" suggests youtube.com)
-	for _, site := range commonSites {
-		if strings.HasPrefix(site, partial) && !seen[site] {
-			full := "https://" + site
-			results = append(results, Suggestion{Text: site, URL: full, Source: "search"})
-			seen[site] = true
-		}
-	}
-
-	// 4. Fallback: plain Google search suggestion always included
-	results = append(results, Suggestion{
-		Text:   "Search Google for \"" + partial + "\"",
-		URL:    partial,
-		Source: "search",
-	})
-
-	sortSuggestionsByRelevance(results, partial)
-
-	if len(results) > limit {
-		results = results[:limit]
-	}
 	return results
 }
 
-// sortSuggestionsByRelevance ranks bookmarks first, then shorter matches
-func sortSuggestionsByRelevance(list []Suggestion, query string) {
-	query=strings.ToLower(query)
-	sort.SliceStable(list, func(i, j int) bool {
-		weightI := sourceWeight(list[i].Source)
-		weightJ := sourceWeight(list[j].Source)
-		if weightI != weightJ {
-			return weightI < weightJ
-		}
-		return len(list[i].Text) < len(list[j].Text)
-	})
+func autocompleteSearch(query string) string {
+	query = strings.TrimSpace(query)
+
+	if query == "" {
+		return ""
+	}
+
+	results := getAutocompleteResults(query)
+
+	if len(results) == 0 {
+		return ""
+	}
+
+	return results[0].URL
 }
 
-func sourceWeight(source string) int {
-	switch source {
-	case "bookmark":
-		return 0
-	case "history":
-		return 1
-	default:
-		return 2
+func autocompleteHTML() string {
+	return `
+<script>
+(function () {
+	"use strict";
+
+	const input =
+		document.querySelector(
+			'input[type="text"]'
+		);
+
+	if (!input) {
+		return;
 	}
+
+	let box = null;
+
+	function createBox() {
+		if (box) {
+			return box;
+		}
+
+		box = document.createElement("div");
+
+		box.style.position = "fixed";
+		box.style.zIndex = "2147483647";
+		box.style.background = "#ffffff";
+		box.style.border = "1px solid #dadce0";
+		box.style.borderRadius = "10px";
+		box.style.boxShadow =
+			"0 4px 18px rgba(0,0,0,.15)";
+		box.style.overflow = "hidden";
+		box.style.display = "none";
+
+		document.body.appendChild(box);
+
+		return box;
+	}
+
+	function hideBox() {
+		if (box) {
+			box.style.display = "none";
+		}
+	}
+
+	function showResults(results) {
+		const b = createBox();
+
+		b.innerHTML = "";
+
+		if (!results || results.length === 0) {
+			hideBox();
+			return;
+		}
+
+		const rect =
+			input.getBoundingClientRect();
+
+		b.style.left =
+			rect.left + "px";
+
+		b.style.top =
+			(rect.bottom + 4) + "px";
+
+		b.style.width =
+			rect.width + "px";
+
+		results.forEach(function (item) {
+
+			const row =
+				document.createElement("div");
+
+			row.style.padding =
+				"10px 14px";
+
+			row.style.cursor =
+				"pointer";
+
+			row.style.borderBottom =
+				"1px solid #f1f3f4";
+
+			row.innerHTML =
+				"<div style='font-size:13px;color:#202124'>" +
+				escapeHTML(item.Title || item.URL) +
+				"</div>" +
+				"<div style='font-size:11px;color:#6b7280;margin-top:3px'>" +
+				escapeHTML(item.URL) +
+				"</div>";
+
+			row.onmouseenter =
+				function () {
+					row.style.background =
+						"#f1f3f4";
+				};
+
+			row.onmouseleave =
+				function () {
+					row.style.background =
+						"#ffffff";
+				};
+
+			row.onclick =
+				function () {
+
+					input.value =
+						item.URL;
+
+					hideBox();
+
+					if (
+						window.realNavigate
+					) {
+						window.realNavigate(
+							item.URL
+						);
+					}
+				};
+
+			b.appendChild(row);
+		});
+
+		b.style.display = "block";
+	}
+
+	function escapeHTML(value) {
+		return String(value)
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;")
+			.replace(/'/g, "&#039;");
+	}
+
+	input.addEventListener(
+		"input",
+		async function () {
+
+			const q =
+				input.value.trim();
+
+			if (!q) {
+				hideBox();
+				return;
+			}
+
+			try {
+
+				const results =
+					await window.getAutocomplete(
+						q
+					);
+
+				showResults(results);
+
+			} catch (e) {
+				hideBox();
+			}
+		}
+	);
+
+	input.addEventListener(
+		"keydown",
+		function (event) {
+
+			if (
+				event.key === "Escape"
+			) {
+				hideBox();
+			}
+		}
+	);
+
+	document.addEventListener(
+		"click",
+		function (event) {
+
+			if (
+				event.target !== input &&
+				(!box ||
+					!box.contains(event.target))
+			) {
+				hideBox();
+			}
+		}
+	);
+
+	window.addEventListener(
+		"resize",
+		hideBox
+	);
+})();
+</script>
+`
 }

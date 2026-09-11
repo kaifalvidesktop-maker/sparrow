@@ -14,8 +14,8 @@ import (
 // ---------------------------------------------------
 // ENCRYPTED PASSWORD MANAGER
 // Master password derives an AES-256 key (via SHA-256).
-// Nothing is ever written to disk — vault lives in RAM only
-// and is wiped when BEAST closes or the vault is locked.
+// Passwords remain encrypted while stored on disk and are only decrypted
+// after the user unlocks the vault.
 // ---------------------------------------------------
 
 type PasswordEntry struct {
@@ -28,12 +28,12 @@ type PasswordEntry struct {
 }
 
 type PasswordVault struct {
-	mu           sync.Mutex
-	Entries      []*PasswordEntry
-	NextID       int
-	masterKey    []byte // derived key, held only while unlocked
-	Unlocked     bool
-	FailedTries  int
+	mu          sync.Mutex
+	Entries     []*PasswordEntry
+	NextID      int
+	masterKey   []byte // derived key, held only while unlocked
+	Unlocked    bool
+	FailedTries int
 }
 
 var passwordVault = &PasswordVault{
@@ -48,8 +48,7 @@ func deriveKey(masterPassword string) []byte {
 }
 
 // Unlock sets the vault's active key from the master password.
-// It doesn't "verify" against anything stored (nothing is stored across
-// restarts), so the FIRST unlock in a session establishes the key.
+// When saved entries exist, the first entry verifies the password.
 func (pv *PasswordVault) Unlock(masterPassword string) bool {
 	pv.mu.Lock()
 	defer pv.mu.Unlock()
@@ -58,7 +57,14 @@ func (pv *PasswordVault) Unlock(masterPassword string) bool {
 		return false
 	}
 
-	pv.masterKey = deriveKey(masterPassword)
+	key := deriveKey(masterPassword)
+	if len(pv.Entries) > 0 {
+		if _, err := decryptWithKey(key, pv.Entries[0].encrypted, pv.Entries[0].nonce); err != nil {
+			pv.FailedTries++
+			return false
+		}
+	}
+	pv.masterKey = key
 	pv.Unlocked = true
 	pv.FailedTries = 0
 	return true
@@ -103,16 +109,18 @@ func (pv *PasswordVault) encrypt(plaintext string) ([]byte, []byte, error) {
 
 // decrypt reverses encrypt() using the current master key
 func (pv *PasswordVault) decrypt(ciphertext []byte, nonce []byte) (string, error) {
-	block, err := aes.NewCipher(pv.masterKey)
+	return decryptWithKey(pv.masterKey, ciphertext, nonce)
+}
+
+func decryptWithKey(key, ciphertext, nonce []byte) (string, error) {
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
 	}
-
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", err
 	}
-
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
 		return "", err
@@ -182,6 +190,46 @@ func (pv *PasswordVault) Remove(id int) bool {
 	}
 	pv.Entries = newList
 	return removed
+}
+
+type StoredPassword struct {
+	ID        int
+	Domain    string
+	Username  string
+	Encrypted []byte
+	Nonce     []byte
+	CreatedAt time.Time
+}
+
+func (pv *PasswordVault) Snapshot() []StoredPassword {
+	pv.mu.Lock()
+	defer pv.mu.Unlock()
+	result := make([]StoredPassword, 0, len(pv.Entries))
+	for _, entry := range pv.Entries {
+		result = append(result, StoredPassword{
+			ID: entry.ID, Domain: entry.Domain, Username: entry.Username,
+			Encrypted: append([]byte(nil), entry.encrypted...),
+			Nonce:     append([]byte(nil), entry.nonce...), CreatedAt: entry.CreatedAt,
+		})
+	}
+	return result
+}
+
+func (pv *PasswordVault) Restore(entries []StoredPassword) {
+	pv.mu.Lock()
+	defer pv.mu.Unlock()
+	pv.Entries = make([]*PasswordEntry, 0, len(entries))
+	pv.NextID = 1
+	for _, entry := range entries {
+		pv.Entries = append(pv.Entries, &PasswordEntry{
+			ID: entry.ID, Domain: entry.Domain, Username: entry.Username,
+			encrypted: append([]byte(nil), entry.Encrypted...),
+			nonce:     append([]byte(nil), entry.Nonce...), CreatedAt: entry.CreatedAt,
+		})
+		if entry.ID >= pv.NextID {
+			pv.NextID = entry.ID + 1
+		}
+	}
 }
 
 // GetMetadataOnly returns entries WITHOUT decrypted passwords —

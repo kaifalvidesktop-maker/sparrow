@@ -1,4 +1,4 @@
-IDI_ICON1 ICON "beast_logo.ico"
+IDI_ICON1 ICON "sparrow_logo.ico"
 
 1 VERSIONINFO
 FILEVERSION     1,0,0,0
@@ -14,11 +14,11 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName",      "Codone"
-            VALUE "FileDescription",  "BEAST Browser"
+            VALUE "FileDescription",  "Sparrow Browser"
             VALUE "FileVersion",      "1.0.0.0"
-            VALUE "InternalName",     "beast"
-            VALUE "OriginalFilename", "beast.exe"
-            VALUE "ProductName",      "BEAST"
+            VALUE "InternalName",     "sparrow"
+            VALUE "OriginalFilename", "sparrow.exe"
+            VALUE "ProductName",      "Sparrow"
             VALUE "ProductVersion",   "1.0.0.0"
         END
     END

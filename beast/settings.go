@@ -22,7 +22,7 @@ type BrowserSettings struct {
 var settings = &BrowserSettings{
 	Theme:               "dark",
 	DefaultSearchEngine: "google",
-	Homepage:            "beast://home",
+	Homepage:            "sparrow://home",
 	JSEnabled:           true,
 	ImagesEnabled:       true,
 	DownloadPath:        "Downloads",
@@ -77,7 +77,7 @@ func (s *BrowserSettings) SetHomepage(url string) string {
 
 	url = strings.TrimSpace(url)
 	if url == "" {
-		url = "beast://home"
+		url = "sparrow://home"
 	}
 	s.Homepage = url
 	return s.Homepage
@@ -119,7 +119,7 @@ func (s *BrowserSettings) ResetToDefault() map[string]any {
 
 	s.Theme = "dark"
 	s.DefaultSearchEngine = "google"
-	s.Homepage = "beast://home"
+	s.Homepage = "sparrow://home"
 	s.JSEnabled = true
 	s.ImagesEnabled = true
 	s.DownloadPath = "Downloads"
